@@ -1,4 +1,4 @@
-exclude: '^(target|dbt_packages|logs)/'
+exclude: '^(target|dbt_packages|logs|demo_data)/'
 
 repos:
   # General file checks (language-agnostic)
