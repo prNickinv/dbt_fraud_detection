@@ -164,7 +164,7 @@ Test results can be found in the [`demo_data/test_results.log`](demo_data/test_r
     *   `make seed`: Load CSV data.
     *   `make run`: Run all dbt models.
     *   `make test`: Run all dbt tests (generic, singular, unit).
-    *   `make test_save`: Run all tests and saves the results to `test_results.log` file.
+    *   `make test_save`: Run all tests and saves the results to `demo_data/test_results.log`.
     *   `make docs`: Generate and serve dbt documentation. Access at `http://localhost:8001`.
     *   `make lint_models`: Run `sqlfluff` linting on models.
     *   `make lint_tests`: Run `sqlfluff` linting on tests.
