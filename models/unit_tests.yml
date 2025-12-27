@@ -1,0 +1,131 @@
+unit_tests:
+  # Staging Layer Test
+  - name: test_stg_transactions_full_columns
+    description: "Verifies column renaming, and macro logic."
+    model: stg_transactions
+
+    overrides:
+      macros:
+        dbt_utils.generate_surrogate_key: "'12345'"
+
+    given:
+      - input: source('clickhouse_stream', 'transactions')
+        format: dict
+        rows:
+          - transaction_time: '2025-01-01 10:00:00'
+            merch: 'Merch A'
+            cat_id: 'grocery_pos'
+            amount: 20.0
+            name_1: 'LLM'
+            name_2: 'ASI'
+            gender: 'M'
+            jobs: 'Engineer'
+            us_state: 'CA'
+            one_city: 'Mountain View'
+            street: '1 AGI St'
+            post_code: 90001
+            lat: 37.23
+            lon: -122.05
+            merchant_lat: 37.24
+            merchant_lon: -122.06
+            population_city: 87316
+            target: 0
+
+    expect:
+      format: dict
+      rows:
+        - transaction_id: '12345'
+          transaction_dt: '2025-01-01 10:00:00'
+          transaction_date: '2025-01-01'
+          merchant_name: 'Merch A'
+          category: 'grocery_pos'
+          first_name: 'LLM'
+          last_name: 'ASI'
+          gender: 'M'
+          customer_job: 'Engineer'
+          us_state: 'CA'
+          city: 'Mountain View'
+          street: '1 AGI St'
+          post_code: 90001
+          customer_lat: 37.23
+          customer_lon: -122.05
+          merchant_lat: 37.24
+          merchant_lon: -122.06
+          population_city: 87316
+          amount: 20.0
+          amount_segment: 'Medium-Small'
+          is_fraud: 0
+
+
+  # Mart Layer Test (Risk Profile)
+  - name: test_mart_customer_risk_profile_logic
+    description: "Verifies risk aggregation logic."
+    model: mart_customer_risk_profile
+    given:
+      - input: ref('stg_transactions')
+        format: dict
+        rows:
+          # --- Customer 1: Alice (High Risk via Fraud) ---
+          - transaction_id: 'id_1'
+            transaction_dt: '2025-01-01 10:00:00'
+            transaction_date: '2025-01-01'
+            merchant_name: 'Shop A'
+            category: 'misc_net'
+            first_name: 'Alice'
+            last_name: 'Transformer'
+            gender: 'F'
+            customer_job: 'Manager'
+            us_state: 'NY'
+            city: 'New York'
+            street: 'NLP Ave'
+            post_code: 10001
+            customer_lat: 40.71
+            customer_lon: -74.00
+            merchant_lat: 40.72
+            merchant_lon: -74.01
+            population_city: 8000000
+            amount: 100.0
+            amount_segment: 'Large'
+            is_fraud: 1
+
+          # --- Customer 2: Bob (Low Risk) ---
+          - transaction_id: 'id_2'
+            transaction_dt: '2025-01-02 12:00:00'
+            transaction_date: '2025-01-02'
+            merchant_name: 'Gas Station'
+            category: 'gas_transport'
+            first_name: 'Bob'
+            last_name: 'Crispr'
+            gender: 'M'
+            customer_job: 'Biologist'
+            us_state: 'TX'
+            city: 'Austin'
+            street: 'Telomere St'
+            post_code: 73301
+            customer_lat: 30.26
+            customer_lon: -97.74
+            merchant_lat: 30.27
+            merchant_lon: -97.75
+            population_city: 950000
+            amount: 40.0
+            amount_segment: 'Medium-Small'
+            is_fraud: 0
+
+    expect:
+      format: dict
+      rows:
+        - first_name: 'Alice'
+          last_name: 'Transformer'
+          total_transactions: 1
+          avg_amount: 100.0
+          total_fraud: 1
+          fraud_rate_pct: 100.0
+          risk_level: 'HIGH'
+
+        - first_name: 'Bob'
+          last_name: 'Crispr'
+          total_transactions: 1
+          avg_amount: 40.0
+          total_fraud: 0
+          fraud_rate_pct: 0.0
+          risk_level: 'LOW'

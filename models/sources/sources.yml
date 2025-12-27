@@ -1,0 +1,30 @@
+#version: 2
+
+sources:
+  - name: clickhouse_stream
+    description: "Raw data from ClickHouse tables (streamed from Kafka)"
+    schema: default
+    tables:
+      - name: transactions
+        description: "Optimized MergeTree table receiving data from Kafka"
+
+        # Raw columns from ClickHouse table
+        columns:
+          - name: transaction_time
+          - name: merch
+          - name: cat_id
+          - name: amount
+          - name: name_1
+          - name: name_2
+          - name: gender
+          - name: street
+          - name: one_city
+          - name: us_state
+          - name: post_code
+          - name: lat
+          - name: lon
+          - name: population_city
+          - name: jobs
+          - name: merchant_lat
+          - name: merchant_lon
+          - name: target

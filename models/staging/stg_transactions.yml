@@ -1,0 +1,150 @@
+version: 2
+
+models:
+  - name: stg_transactions
+    description: >
+      Staged column renaming, 'transaction_id' surrogate key generation via dbt_utils,
+      'get_amount_bucket' custom macro application, tests via dbt_expectations, dbt_utils, etc.
+
+    columns:
+      # --- ID ---
+      - name: transaction_id
+        description: "Surrogate key generated from time, user name, merchant, and amount. Used to identify unique rows."
+        tests:
+          - unique:
+              config:
+                severity: warn
+          - not_null
+
+      # --- Date & Time ---
+      - name: transaction_dt
+        description: "Transaction timestamp (DateTime)"
+        tests:
+          - not_null
+
+      - name: transaction_date
+        description: "Transaction date, derived from timestamp. Used for partitioning."
+        tests:
+          - not_null
+
+      # --- Merchant Info ---
+      - name: merchant_name
+        description: "Name of the merchant"
+        tests:
+          - not_null
+
+      - name: category
+        description: "Transaction category (e.g., health_fitness, gas_transport) - 14 unique values"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['health_fitness', 'kids_pets', 'gas_transport', 'entertainment', 'shopping_pos', 'home', 'misc_net', 'grocery_pos', 'personal_care', 'shopping_net', 'food_dining', 'misc_pos', 'travel', 'grocery_net']
+
+      # --- Customer Info ---
+      - name: first_name
+        description: "First name of the customer"
+        tests:
+          - not_null
+
+      - name: last_name
+        description: "Last name of the customer"
+        tests:
+          - not_null
+
+      - name: gender
+        description: "Gender of the customer"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['M', 'F']
+              quote_values: true
+
+      - name: customer_job
+        description: "Job title/Profession of the customer"
+        tests:
+          - not_null
+
+      # --- Geographic Info ---
+      - name: us_state
+        description: "US state and federal district code (e.g., TX, CA, DC)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC']
+
+      - name: city
+        description: "City of the customer"
+        tests:
+          - not_null
+
+      - name: street
+        description: "Street address of the customer"
+        tests:
+          - not_null
+
+      - name: post_code
+        description: "Postal code of the customer"
+        tests:
+          - not_null
+
+      - name: customer_lat
+        description: "Latitude of the customer's location"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: [-90, 90]
+              quote_values: false
+
+      - name: customer_lon
+        description: "Longitude of the customer's location"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: [-180, 180]
+              quote_values: false
+
+      - name: merchant_lat
+        description: "Latitude of the merchant"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: [-90, 90]
+              quote_values: false
+
+      - name: merchant_lon
+        description: "Longitude of the merchant"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: [-180, 180]
+              quote_values: false
+
+      - name: population_city
+        description: "Population of the customer's city"
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      # --- Transaction Info ---
+      - name: amount
+        description: "Transaction amount in USD"
+        tests:
+          - not_null
+          # Ensure no negative transactions (including zero in case of 100% discounts, etc.)
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: amount_segment
+        description: "Amount segment calculated via macro (Small, Medium-Small, Medium-Large, Large)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Small', 'Medium-Small', 'Medium-Large', 'Large']
+
+      - name: is_fraud
+        description: "Flag indicating if transaction is fraudulent (0 -> Legitimate, 1 -> Fraud)"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: [0, 1]
+              quote_values: false

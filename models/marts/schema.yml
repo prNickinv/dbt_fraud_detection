@@ -1,0 +1,309 @@
+version: 2
+
+models:
+  - name: mart_daily_state_metrics
+    description: "Aggregated daily transaction metrics by US State."
+
+    # Ensures the Group By logic worked and the combination of (transaction_date, us_state) is unique
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - transaction_date
+            - us_state
+
+    columns:
+      - name: transaction_date
+        description: "The date of the transactions"
+        tests:
+          - not_null
+
+      - name: us_state
+        description: "US State code"
+        tests:
+          - not_null
+
+      # --- Aggregated Metrics ---
+      - name: total_transactions
+        description: "Total number of transactions"
+        tests:
+          - not_null
+
+      - name: total_amount
+        description: "Sum of transaction amounts"
+        tests:
+          - not_null
+
+      - name: avg_amount
+        description: "Average transaction amounts"
+        tests:
+          - not_null
+
+      - name: p95_amount
+        description: "95th percentile of transaction amounts"
+        tests:
+          - not_null
+
+      - name: share_of_large_transactions
+        description: "Share of transactions labeled as 'Large' segments"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+
+  - name: mart_fraud_by_category
+    description: "Aggregated fraud statistics by spending category."
+
+    columns:
+      - name: category
+        description: "The spending category (e.g., gas transport, etc.)"
+        tests:
+          - unique   # Since we GROUP BY category, this must be unique
+          - not_null
+
+      # --- Metrics ---
+      - name: total_transactions
+        description: "Total number of transactions in this category"
+        tests:
+          - not_null
+
+      - name: total_fraud
+        description: "Total number of fraudulent transactions"
+        tests:
+          - not_null
+
+      - name: fraud_rate_pct
+        description: "Percentage of transactions that were fraudulent"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+      - name: total_amount
+        description: "Total monetary amount for this category"
+        tests:
+          - not_null
+
+      - name: fraud_amount
+        description: "Total monetary amount associated with fraud for this category"
+        tests:
+          - not_null
+
+  - name: mart_fraud_by_state
+    description: "Fraud distribution by US states"
+
+    columns:
+      - name: us_state
+        description: "US State code"
+        tests:
+          - unique   # Since we group by state, each state must appear only once
+          - not_null
+
+      # --- Metrics ---
+      - name: total_transactions
+        description: "Total number of transactions in this state"
+        tests:
+          - not_null
+
+      - name: fraud_rate_pct
+        description: "Percentage of transactions that were fraudulent"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+      - name: unique_customers
+        description: "Number of unique customers in this state"
+        tests:
+          - not_null
+
+      - name: unique_merchants
+        description: "Number of unique merchants in this state"
+        tests:
+          - not_null
+
+      - name: total_amount
+        description: "Total monetary amount for this state"
+        tests:
+          - not_null
+
+      - name: fraud_amount
+        description: "Total monetary amount associated with fraud for this state"
+        tests:
+          - not_null
+
+  - name: mart_customer_risk_profile
+    description: >
+      Customer risk segmentation profile based on historical behavior and fraud activity.
+      Classifies customers into HIGH, MEDIUM, or LOW risk categories.
+
+    # Since the SQL groups by first and last name, the combination must be unique
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - first_name
+            - last_name
+
+    columns:
+      # --- Customer Identity ---
+      - name: first_name
+        description: "Customer's first name"
+        tests:
+          - not_null
+
+      - name: last_name
+        description: "Customer's last name"
+        tests:
+          - not_null
+
+      # --- Aggregated Metrics ---
+      - name: total_transactions
+        description: "Total number of transactions made by this customer"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 1" # A customer must have at least 1 transaction to appear here
+
+      - name: avg_amount
+        description: "Average transaction amounts made by this customer"
+        tests:
+          - not_null
+
+      - name: total_fraud
+        description: "Total number of fraudulent transactions made by this customer"
+        tests:
+          - not_null
+
+      - name: fraud_rate_pct
+        description: "Percentage of customer's transactions marked as fraud"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+      # --- Risk Assessment ---
+      - name: risk_level
+        description: >
+          Calculated risk segment:
+          - HIGH: Has any fraud history OR avg spendings > $500.
+          - MEDIUM: Avg spendings > $100 AND > 1250 transactions.
+          - LOW: All others.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['HIGH', 'MEDIUM', 'LOW']
+              quote_values: true
+
+  - name: mart_hourly_fraud_pattern
+    description: >
+      Temporal analysis of fraud aggregated by day of the week and hour of the day.
+      Used to identify "high-risk windows" on temporal basis.
+
+    # The combination of day_of_week and hour_of_day must be unique
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - day_of_week
+            - hour_of_day
+
+    columns:
+      - name: day_of_week
+        description: "Day of the week integer (1=Monday, 7=Sunday)"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 7
+
+      - name: hour_of_day
+        description: "Hour of the day (0-23)"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 23
+
+      # --- Metrics ---
+      - name: total_transactions
+        description: "Total number of transactions in this time frame"
+        tests:
+          - not_null
+
+      - name: total_fraud
+        description: "Total number of fraudulent transactions in this time frame"
+        tests:
+          - not_null
+
+      - name: fraud_rate_pct
+        description: "Fraud rate percentage for this time frame"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+  - name: mart_merchant_analytics
+    description: >
+      Merchant metrics analysis.
+      Aggregates monetary amount and fraud metrics.
+      Labels suspicious merchants based on monetary amount related to fraud.
+
+    columns:
+      - name: merchant_name
+        description: "Name of the merchant"
+        tests:
+          - unique # Grouping Key
+          - not_null
+
+      # --- Transactions Metrics ---
+      - name: total_transactions
+        description: "Total number of transactions processed by this merchant"
+        tests:
+          - not_null
+
+      - name: total_fraud
+        description: "Total number of fraudulent transactions related to this merchant"
+        tests:
+          - not_null
+
+      - name: fraud_rate_pct
+        description: "Fraud rate percentage for this merchant"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+      # --- Monetary Metrics ---
+      - name: total_amount
+        description: "Total monetary amount for this merchant"
+        tests:
+          - not_null
+
+      - name: fraud_amount
+        description: "Total monetary amount associated with fraud for this merchant"
+        tests:
+          - not_null
+
+      - name: fraud_amount_pct
+        description: "Percentage of total monetary amount accociated with fraud for this merchant"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+
+      # --- Risk Assessment ---
+      - name: is_suspicious_merchant
+        description: >
+          Flag (1/0).
+          Labels as suspicious if the merchant's fraud amount exceeds 5% of its total monetary amount.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false

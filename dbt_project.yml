@@ -1,0 +1,28 @@
+name: 'fraud_detection'
+
+config-version: 2
+
+profile: 'clickhouse_service'
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+  - "logs"
+
+# Require dbt version 1.8+ for Unit Tests
+require-dbt-version: [">=1.8.0", "<2.0.0"]
+
+models:
+  fraud_detection:
+    +materialized: table
+    +engine: MergeTree()
+
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

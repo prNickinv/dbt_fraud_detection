@@ -1,0 +1,10 @@
+[sqlfluff]
+dialect = clickhouse
+templater = dbt
+
+[sqlfluff:rules:capitalisation.keywords]
+indentation = consistent
+capitalisation.keywords = upper
+
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = camel

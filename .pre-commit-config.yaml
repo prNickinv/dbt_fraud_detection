@@ -1,0 +1,24 @@
+exclude: '^(target|dbt_packages|logs)/'
+
+repos:
+  # General file checks (language-agnostic)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+        args: [--allow-multiple-documents] # Needed for dbt's schema files
+      - id: check-merge-conflict           # Prevents committing unresolved merge conflicts
+      - id: end-of-file-fixer              # Ensures files end in a newline
+      - id: trailing-whitespace            # Trims trailing whitespace
+
+
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.5.0
+    hooks:
+      - id: sqlfluff-lint
+        name: "Lint SQL files"
+        description: "Checks SQL files for style and quality issues using .sqlfluff config."
+        args: [--dialect, clickhouse]
+        additional_dependencies:
+          - dbt-clickhouse
+          - sqlfluff-templater-dbt
