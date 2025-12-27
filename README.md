@@ -18,7 +18,7 @@ The project emphasizes a layered data architecture (`raw` → `staging` → `mar
 ## Repository Structure
 
 ```
-fraud_analytics/
+dbt_fraud_detection/
 ├── README.md
 ├── Makefile                  # Automation for common dbt and development tasks
 ├── dbt_project.yml           # dbt project configuration
@@ -122,7 +122,7 @@ The project generates the following analytical data marts:
 *   **`assert_fraud_rate_bounds.sql`**: Checks that `fraud_rate_pct` values in `mart_fraud_by_category` are always between 0 and 100.
 *   **`assert_total_fraud_amount_consistency.sql`**: Ensures that the total sum of `fraud_amount` is consistent across `mart_fraud_by_state` and `mart_fraud_by_category`.
 
-### Unit Tests (in `models/staging/unit_tests.yml`)
+### Unit Tests (in `models/unit_tests.yml`)
 *   **`test_stg_transactions_full_columns`**: Verifies the `stg_transactions` model's transformations, including surrogate key generation (with an `overrides` mock), column renaming and the `get_amount_bucket` macro logic, using mocked raw data.
 *   **`test_mart_customer_risk_profile_logic`**: Tests the `mart_customer_risk_profile` model's segmentation logic (`HIGH`/`MEDIUM`/`LOW` risk levels) with specific customer scenarios.
 
@@ -148,7 +148,7 @@ Test results can be found in the [`demo_data/test_results.log`](demo_data/test_r
 
 ### SQLFluff
 *   **Configuration**: The `.sqlfluff` file in the project root configures rules for the `ClickHouse` dialect and dbt templating.
-*   **Usage**: Integrated with `pre-commit` and callable via `make lint`.
+*   **Usage**: Integrated with `pre-commit` and callable via `make lint_models` and `make lint_tests`.
 
 ### .pre-commit-config.yaml
 *   **Hooks Included**:
