@@ -19,7 +19,7 @@ The project emphasizes a layered data architecture (`raw` → `staging` → `mar
 
 ```
 fraud_analytics/
-├── README.md                 
+├── README.md
 ├── Makefile                  # Automation for common dbt and development tasks
 ├── dbt_project.yml           # dbt project configuration
 ├── packages.yml              # dbt external packages (dbt_utils, dbt_expectations)
@@ -49,7 +49,7 @@ fraud_analytics/
 │   ├── assert_fraud_rate_bounds.sql
 │   ├── assert_no_negative_amounts.sql
 │   └── assert_total_fraud_amount_consistency.sql
-└── demo_data/   
+└── demo_data/
     ├── dbt-dag.png          # DAG visualization
     ├── test_results.png     # Test results screenshot
     └── test_results.log     # Test results log
@@ -88,7 +88,7 @@ This table contains detailed transaction records with a `target` column indicati
 The project generates the following analytical data marts:
 
 1.  **`mart_daily_state_metrics`**:
-    *   Aggregated daily transaction metrics by US state. 
+    *   Aggregated daily transaction metrics by US state.
 
 2.  **`mart_fraud_by_category`**:
     *   Aggregated fraud statistics by spending category.

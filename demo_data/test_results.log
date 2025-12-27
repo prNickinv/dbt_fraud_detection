@@ -1,9 +1,9 @@
 [0m14:15:36  Running with dbt=1.11.2
 [0m14:15:36  Registered adapter: clickhouse=1.9.7
 [0m14:15:37  Found 7 models, 93 data tests, 1 source, 879 macros, 2 unit tests
-[0m14:15:37  
+[0m14:15:37
 [0m14:15:37  Concurrency: 1 threads (target='local')
-[0m14:15:37  
+[0m14:15:37
 [0m14:15:38  1 of 95 START test accepted_values_mart_merchant_analytics_is_suspicious_merchant__False__0__1  [RUN]
 [0m14:15:38  1 of 95 PASS accepted_values_mart_merchant_analytics_is_suspicious_merchant__False__0__1  [[32mPASS[0m in 0.06s]
 [0m14:15:38  2 of 95 START test accepted_values_stg_transactions_amount_segment__Small__Medium_Small__Medium_Large__Large  [RUN]
@@ -194,9 +194,9 @@
 [0m14:15:42  94 of 95 PASS mart_customer_risk_profile::test_mart_customer_risk_profile_logic  [[32mPASS[0m in 0.34s]
 [0m14:15:42  95 of 95 START unit_test stg_transactions::test_stg_transactions_full_columns .. [RUN]
 [0m14:15:42  95 of 95 PASS stg_transactions::test_stg_transactions_full_columns ............. [[32mPASS[0m in 0.21s]
-[0m14:15:42  
+[0m14:15:42
 [0m14:15:42  Finished running 93 data tests, 2 unit tests in 0 hours 0 minutes and 5.60 seconds (5.60s).
-[0m14:15:43  
+[0m14:15:43
 [0m14:15:43  [32mCompleted successfully[0m
-[0m14:15:43  
+[0m14:15:43
 [0m14:15:43  Done. PASS=95 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=95

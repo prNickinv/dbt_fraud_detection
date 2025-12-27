@@ -1,4 +1,4 @@
-.PHONY: deps seed run test test_save docs lint_models lint_tests all 
+.PHONY: deps seed run test test_save docs lint_models lint_tests all
 
 deps:
 	dbt deps
