@@ -6,7 +6,7 @@ This dbt project is designed to build a robust data transformation pipeline for 
 
 ## Project Overview
 
-The primary goal of this project is to transform raw transaction data into a set of analytical data marts. These marts provide actionable insights into:
+The primary goal of this project is to transform raw transaction data into a set of analytical data marts. These marts provide the following information:
 *   Daily transaction trends by state.
 *   Fraud levels across different transaction categories and states.
 *   Customer risk profiles.
@@ -24,7 +24,7 @@ fraud_analytics/
 ├── dbt_project.yml           # dbt project configuration
 ├── packages.yml              # dbt external packages (dbt_utils, dbt_expectations)
 ├── profiles.yml              # ClickHouse connection profile
-├── .gitignore                # Files/directories to ignore by Git
+├── .gitignore
 ├── .sqlfluff                 # SQLFluff configuration for linting SQL
 ├── .pre-commit-config.yaml   # Pre-commit hooks configuration
 ├── macros/
@@ -45,7 +45,6 @@ fraud_analytics/
 │       ├── mart_merchant_analytics.sql
 │       └── schema.yml         # Schema & tests for mart models
 ├── tests/                     # Singular tests
-│   ├── assert_customer_risk_logic_integrity.sql
 │   ├── assert_fraud_rate_bounds.sql
 │   ├── assert_no_negative_amounts.sql
 │   └── assert_total_fraud_amount_consistency.sql
@@ -81,7 +80,7 @@ This table contains detailed transaction records with a `target` column indicati
 | `lat`, `lon`      | `Float64`  | Customer's latitude and longitude.           |
 | `merchant_lat`, `merchant_lon` | `Float64` | Merchant's latitude and longitude.       |
 | `population_city` | `Int64`    | Population of the customer's city.           |
-| `target`          | `UInt8`    | **Fraud flag**: `1` for fraud, `0` for legitimate. |
+| `target`          | `Int64`    | **Fraud flag**: `1` for fraud, `0` for legitimate. |
 
 ## Data Marts
 
@@ -158,7 +157,6 @@ Test results can be found in the [`demo_data/test_results.log`](demo_data/test_r
 *   **Setup**: Run `pre-commit install` once after cloning the repo.
 
 ### Makefile
-*   **Purpose**: Provides convenient shortcuts for common dbt and development commands, streamlining the workflow.
 *   **Commands**:
     *   `make deps`: Install dbt package dependencies.
     *   `make seed`: Load CSV data.
